@@ -10,28 +10,47 @@ function newPlayer(state, client) {
 
     const player = {id, client};
     state.players.list.push(player);
-    console.log('players:', state.players.list.length);
+    handle(state, 'player_new', player);
 }
 
 function attach(state, client, id) {
     for (const player of state.players.list) {
         if (player.id === id) {
+            clearTimeout(player.disconnecting);
             player.client.disconnect(true);
             player.client = client;
             client.emit('attached', id);
-            console.log('reattached');
+            handle(state, 'player_reconnect', player);
             return;
         }
     }
 
     const player = {id, client};
     state.players.list.push(player);
-    console.log('players:', state.players.list.length);
+    handle(state, 'player_new', player);
+}
+
+function disconnect(state, player) {
+    for (let i = 0; i < state.players.list.length; i += 1) {
+        if (player === state.players.list[i]) {
+            state.players.list.splice(i, 1);
+        }
+    }
+}
+
+function disconnectClientLater(state, client) {
+    for (let i = 0; i < state.players.list.length; i += 1) {
+        const player = state.players.list[i];
+        if (player.client === client) {
+            player.disconnecting = setTimeout(() => {
+                disconnect(state, player);
+            }, 9000);
+        }
+    }
 }
 
 addHandler('server_start', (state, socket) => {
     socket.on('connection', (client) => {
-
         client.on('attach', (id) => {
             if (typeof id !== 'string' || id.length > 50) {
                 newPlayer(state, client);
@@ -45,15 +64,7 @@ addHandler('server_start', (state, socket) => {
         });
 
         client.on('disconnect', () => {
-
-            // for (let i = 0; i < state.players.list.length; i += 1) {
-            //     if (state.players.list[i].client === client) {
-            //         state.players.list.splice(i, 1);
-            //     }
-            // }
-            // console.log('players:', state.players.list.length);
-
-            // TODO: Remove player object on manual exit or after timeout
+            disconnectClientLater(state, client);
         });
     });
 });

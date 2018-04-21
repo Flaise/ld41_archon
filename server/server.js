@@ -4,6 +4,7 @@ const {addHandler, handle} = require('skid/lib/event');
 const {start} = require('skid/lib/load');
 
 require('./player');
+require('./team');
 
 addHandler('load_done', (state) => {
     const server = http.Server();

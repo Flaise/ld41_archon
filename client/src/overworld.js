@@ -2,11 +2,14 @@ const {addHandler, handle} = require('skid/lib/event');
 const {Camera} = require('skid/lib/scene/camera');
 const {Group} = require('skid/lib/scene/group');
 const {ComputedTileField} = require('skid/lib/scene/computed-tile-field');
+const {IconAvatar} = require('skid/lib/scene/icon-avatar');
 const {loadIcon} = require('skid/lib/scene/icon');
 
 addHandler('load', (state) => {
     const tileA = loadIcon(state, './assets/tile_a.png', 50, 50, 100, 3567);
     const tileB = loadIcon(state, './assets/tile_b.png', 50, 50, 100, 5815);
+    const characterA = loadIcon(state, './assets/character_a.png', 50, 50, 100, 5815);
+    const characterB = loadIcon(state, './assets/character_b.png', 50, 50, 100, 5815);
 
     const camera = new Camera(state.scene.smoothing);
     const terrain = new Group(camera);
@@ -15,10 +18,16 @@ addHandler('load', (state) => {
     const height = 0;
     const owners = {};
     const field = new ComputedTileField(terrain, 100);
-    state.overworld = {width, height, owners, camera, field, tileA, tileB};
+    state.overworld = {width, height, owners, camera, field, characters,
+                       tileA, tileB, characterA, characterB};
 });
 
-addHandler('overworld', (state, {width, height, owners}) => {
+addHandler('connect', (state) => {
+    state.overworld.field.clear();
+    state.overworld.characters.clear();
+});
+
+addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
     state.overworld.width = width;
     state.overworld.height = height;
     state.overworld.owners = owners;
@@ -44,5 +53,13 @@ addHandler('overworld', (state, {width, height, owners}) => {
             tile = state.overworld.tileB;
         }
         state.overworld.field.makeTile(tile, x, y, 0, 0);
+    }
+
+    state.overworld.characters.clear();
+    for (const {x, y} of teamA) {
+        const avatar = new IconAvatar(state.overworld.characters, state.overworld.characterA, x, y, 1, 1);
+    }
+    for (const {x, y} of teamB) {
+        const avatar = new IconAvatar(state.overworld.characters, state.overworld.characterB, x, y, 1, 1);
     }
 });

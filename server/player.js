@@ -1,6 +1,7 @@
 const http = require('http');
 const io = require('socket.io');
 const {addHandler, handle} = require('skid/lib/event');
+const {remove} = require('skid/lib/array');
 
 exports.playerHandle = function playerHandle(player, command, argument) {
     clientHandle(player.client, command, argument);
@@ -42,11 +43,8 @@ function attachNew(state, client, id) {
 }
 
 function disconnect(state, player) {
-    for (let i = 0; i < state.players.list.length; i += 1) {
-        if (player === state.players.list[i]) {
-            state.players.list.splice(i, 1);
-        }
-    }
+    remove(state.players.list, player);
+    handle(state, 'player_end', player);
 }
 
 function disconnectClientLater(state, client) {

@@ -13,6 +13,7 @@ addHandler('load_done', (state) => {
         } else {
             socket.emit('new');
         }
+        handle(state, 'connect');
     });
 
     socket.on('command', ({command, argument}) => {

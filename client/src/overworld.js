@@ -15,20 +15,25 @@ addHandler('load', (state) => {
     camera.layer = 1;
     const terrain = new Group(camera);
     const characters = new Group(camera);
+    const worldHud = new Group(camera);
     const width = 0;
     const height = 0;
     const owners = {};
     const field = new ComputedTileField(terrain, 100);
-    state.overworld = {width, height, owners, camera, field, characters,
+    state.overworld = {width, height, owners, camera, field, characters, worldHud,
                        tileA, tileB, characterA, characterB};
 });
 
 addHandler('connect', (state) => {
     state.overworld.field.clear();
     state.overworld.characters.clear();
+    state.overworld.worldHud.clear();
 });
 
 addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
+    state.overworld.field.clear();
+    state.overworld.characters.clear();
+
     state.overworld.width = width;
     state.overworld.height = height;
     state.overworld.owners = owners;
@@ -41,7 +46,6 @@ addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
     state.overworld.camera.anchorX.setTo(.5);
     state.overworld.camera.anchorY.setTo(.5);
 
-    state.overworld.field.clear();
     for (const key of Object.keys(owners)) {
         const owner = owners[key];
         let [x, y] = key.split(',');
@@ -56,7 +60,6 @@ addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
         state.overworld.field.makeTile(tile, x, y, 0, 0);
     }
 
-    state.overworld.characters.clear();
     for (const {x, y} of teamA) {
         const avatar = new IconAvatar(state.overworld.characters, state.overworld.characterA, x, y, 1, 1);
     }

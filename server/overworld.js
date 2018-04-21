@@ -87,6 +87,7 @@ function move(state, player, delta) {
     if (y < 0) return;
     player.overworld.position.x = x;
     player.overworld.position.y = y;
+    playerHandle(player, 'overworld_self', {x, y});
 }
 
 function sendOverworld(state, player) {
@@ -191,5 +192,6 @@ function xyToKey({x, y}) {
 addHandler('player_reconnect', (state, player) => {
     if (player.view === 'overworld') {
         sendOverworld(state, player);
+        playerHandle(player, 'overworld_self', player.overworld.position);
     }
 });

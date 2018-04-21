@@ -1,6 +1,7 @@
 const {addHandler} = require('skid/lib/event');
 const {TextAvatar} = require('skid/lib/scene/text-avatar');
 const {Opacity} = require('skid/lib/scene/opacity');
+const {RectAvatar} = require('skid/lib/scene/rect-avatar');
 
 addHandler('load', (state) => {
     const hud = new Opacity(state.scene.hudCamera, 0);
@@ -24,7 +25,18 @@ addHandler('overworld', (state) => {
 });
 
 addHandler('overworld_self', (state, {x, y}) => {
+    state.overworld.worldHud.clear();
 
+    const avatar = new RectAvatar(state.overworld.worldHud);
+    avatar.x.setTo(x);
+    avatar.y.setTo(y);
+    avatar.w.setTo(1);
+    avatar.h.setTo(1);
+    avatar.anchorX.setTo(.5);
+    avatar.anchorY.setTo(.5);
+    avatar.strokeStyle = 'yellow';
+    avatar.lineWidth = .05;
+    avatar.radius = .15;
 });
 
 require('skid/lib/input'); // NOTE: makes 'key' events fire

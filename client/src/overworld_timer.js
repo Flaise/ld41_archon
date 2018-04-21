@@ -4,7 +4,7 @@ const {PieAvatar} = require('skid/lib/scene/pie-avatar');
 const {Translation} = require('skid/lib/scene/translation');
 
 addHandler('load', (state) => {
-    const root = new Translation(state.overworld.hud);
+    const root = new Translation(state.overworld.hud); // TODO: Shouldn't be overworld.hud
 
     const pieOffset = new Translation(root);
     pieOffset.x.setTo(.08)

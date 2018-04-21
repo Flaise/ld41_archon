@@ -5,7 +5,8 @@ const {ComputedTileField} = require('skid/lib/scene/computed-tile-field');
 const {loadIcon} = require('skid/lib/scene/icon');
 
 addHandler('load', (state) => {
-    const tile = loadIcon(state, './assets/tile.png', 50, 50, 100, 3567);
+    const tileA = loadIcon(state, './assets/tile_a.png', 50, 50, 100, 3567);
+    const tileB = loadIcon(state, './assets/tile_b.png', 50, 50, 100, 5815);
 
     const camera = new Camera(state.scene.smoothing);
     const terrain = new Group(camera);
@@ -14,7 +15,7 @@ addHandler('load', (state) => {
     const height = 0;
     const owners = {};
     const field = new ComputedTileField(terrain, 100);
-    state.overworld = {width, height, owners, camera, field, tile};
+    state.overworld = {width, height, owners, camera, field, tileA, tileB};
 });
 
 addHandler('overworld', (state, {width, height, owners}) => {
@@ -23,8 +24,8 @@ addHandler('overworld', (state, {width, height, owners}) => {
     state.overworld.owners = owners;
     state.view = 'overworld';
 
-    state.overworld.camera.x.setTo(width / 2);
-    state.overworld.camera.y.setTo(height / 2);
+    state.overworld.camera.x.setTo(width / 2 - .5);
+    state.overworld.camera.y.setTo(height / 2 - .5);
     state.overworld.camera.w.setTo(height / .75);
     state.overworld.camera.h.setTo(height);
     state.overworld.camera.anchorX.setTo(.5);
@@ -36,6 +37,12 @@ addHandler('overworld', (state, {width, height, owners}) => {
         let [x, y] = key.split(',');
         x = Number.parseInt(x);
         y = Number.parseInt(y);
-        session.overworld.field.makeTile(session.overworld.tile, x, y, 0, 0);
+        let tile;
+        if (owner === 'a') {
+            tile = state.overworld.tileA;
+        } else {
+            tile = state.overworld.tileB;
+        }
+        state.overworld.field.makeTile(tile, x, y, 0, 0);
     }
 });

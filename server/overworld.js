@@ -5,8 +5,8 @@ addHandler('load', (state) => {
     const width = 10;
     const height = 10;
     state.overworld = {width, height, owners: {}};
-    for (let y = 0; y <= height; y += 1) {
-        for (let x = 0; x <= width; x += 1) {
+    for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
             let owner = 'b';
             if (x < 5) owner = 'a';
             state.overworld.owners[`${x},${y}`] = owner;
@@ -17,4 +17,10 @@ addHandler('load', (state) => {
 addHandler('player_onteam', (state, player) => {
     player.view = 'overworld';
     playerHandle(player, 'overworld', state.overworld);
+});
+
+addHandler('player_reconnect', (state, player) => {
+    if (player.view === 'overworld') {
+        playerHandle(player, 'overworld', state.overworld);
+    }
 });

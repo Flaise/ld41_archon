@@ -31,6 +31,7 @@ function attach(state, client, id) {
             return;
         }
     }
+    attachNew(state, client, id);
 }
 
 function attachNew(state, client, id) {
@@ -78,6 +79,11 @@ addHandler('load_done', (state) => {
 
         client.on('disconnect', () => {
             disconnectClientLater(state, client);
+        });
+
+        client.on('command', ({command, argument}) => {
+            // TODO: search for player
+            console.log('command', command, argument);
         });
     });
 

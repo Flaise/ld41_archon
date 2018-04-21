@@ -5,7 +5,8 @@
     "socket.io-client": "^2.1.0"
   },
   "devDependencies": {
-    "browserify": "^16.0.0"
+    "browserify": "^16.0.0",
+    "local-web-server": "^2.4.0"
   },
   "private": true
 }

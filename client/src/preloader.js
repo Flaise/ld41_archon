@@ -5,7 +5,7 @@ const {load} = require('skid/lib/load');
 const {addHandler, handle} = require('skid/lib/event');
 
 addHandler('load', (state) => {
-    const meter = new PieAvatar(state.scene.ui);
+    const meter = new PieAvatar(state.scene.hudCamera);
     meter.x.setTo(.5);
     meter.y.setTo(.75 / 2);
     meter.w.setTo(.03);
@@ -13,11 +13,11 @@ addHandler('load', (state) => {
     meter.fillStyle = 'black';
     meter.innerRadiusRel.setTo(.6);
 
-    const textPosition = new Translation(state.scene.ui);
+    const textPosition = new Translation(state.scene.hudCamera);
     textPosition.x.setTo(.5);
     textPosition.y.setTo(.75 / 2 + .032);
 
-    const text = new TextAvatar(textPosition, state.scene.camera);
+    const text = new TextAvatar(textPosition, state.scene.hudCamera);
     text.textAlign = 'center';
     text.textBaseline = 'top';
     text.fillStyle = 'black';

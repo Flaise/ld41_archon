@@ -1,7 +1,6 @@
 
-require('./network');
-require('./viewport');
-require('./preloader');
+require('./player');
+require('./team');
 require('./overworld');
 const {start} = require('skid/lib/load');
 

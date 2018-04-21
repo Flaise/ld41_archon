@@ -1,4 +1,15 @@
+const http = require('http');
+const io = require('socket.io');
 const {addHandler, handle} = require('skid/lib/event');
+
+exports.playerHandle = function playerHandle(player, command, argument) {
+    clientHandle(player.client, command, argument);
+}
+
+function clientHandle(client, command, argument) {
+    client.emit('command', {command, argument});
+}
+exports.clientHandle = clientHandle;
 
 addHandler('load', (state) => {
     state.players = {list: []};
@@ -6,11 +17,7 @@ addHandler('load', (state) => {
 
 function newPlayer(state, client) {
     const id = `${Date.now()}${Math.random()}`;
-    client.emit('attached', id);
-
-    const player = {id, client};
-    state.players.list.push(player);
-    handle(state, 'player_new', player);
+    attachNew(state, client, id);
 }
 
 function attach(state, client, id) {
@@ -19,14 +26,17 @@ function attach(state, client, id) {
             clearTimeout(player.disconnecting);
             player.client.disconnect(true);
             player.client = client;
-            client.emit('attached', id);
+            clientHandle(client, 'attached', id);
             handle(state, 'player_reconnect', player);
             return;
         }
     }
+}
 
+function attachNew(state, client, id) {
     const player = {id, client};
     state.players.list.push(player);
+    clientHandle(client, 'attached', id);
     handle(state, 'player_new', player);
 }
 
@@ -49,7 +59,10 @@ function disconnectClientLater(state, client) {
     }
 }
 
-addHandler('server_start', (state, socket) => {
+addHandler('load_done', (state) => {
+    const server = http.Server();
+    const socket = io(server);
+
     socket.on('connection', (client) => {
         client.on('attach', (id) => {
             if (typeof id !== 'string' || id.length > 50) {
@@ -67,4 +80,6 @@ addHandler('server_start', (state, socket) => {
             disconnectClientLater(state, client);
         });
     });
+
+    server.listen(3000);
 });

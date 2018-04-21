@@ -12,12 +12,9 @@ addHandler('load', (session) => {
     const clearAll = new ClearAll(renderer);
     const smoothing = new Smoothing(renderer, true);
 
-    const camera = new Camera(smoothing);
-    camera.w.setTo(1);
-    camera.h.setTo(.75);
+    const hudCamera = new Camera(smoothing);
+    hudCamera.w.setTo(1);
+    hudCamera.h.setTo(.75);
 
-    const world = new Group(camera);
-    const ui = new Group(camera);
-
-    session.scene = {world, camera, ui};
+    session.scene = {hudCamera, smoothing};
 });

@@ -1,6 +1,8 @@
 {
   "dependencies": {
-    "socket.io": "^2.1.0"
+    "skid": "0.0.16",
+    "socket.io": "^2.1.0",
+    "babel-runtime": "^6.26.0"
   },
   "devDependencies": {},
   "private": true

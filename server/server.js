@@ -1,16 +1,17 @@
 const http = require('http');
 const io = require('socket.io');
+const {addHandler, handle} = require('skid/lib/event');
+const {start} = require('skid/lib/load');
 
-const server = http.Server();
-const socket = io(server);
+require('./player');
 
-socket.on('connection', function(socket){
-    console.log('a user connected');
-    socket.on('disconnect', function(){
-        console.log('user disconnected');
-    });
+addHandler('load_done', (state) => {
+    const server = http.Server();
+    const socket = io(server);
+
+    handle(state, 'server_start', socket);
+
+    server.listen(3000);
 });
 
-server.listen(3000, function() {
-    console.log('listening on *:3000');
-});
+start(true);

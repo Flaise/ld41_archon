@@ -79,9 +79,18 @@ addHandler('load_done', (state) => {
             disconnectClientLater(state, client);
         });
 
+        let player;
         client.on('command', ({command, argument}) => {
-            // TODO: search for player
-            console.log('command', command, argument);
+            if (!player) {
+                for (const other of state.players.list) {
+                    if (other.client === client) {
+                        player = other;
+                        break;
+                    }
+                }
+                if (!player) return;
+            }
+            handle(state, `player_${command}`, {player, argument});
         });
     });
 

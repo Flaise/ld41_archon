@@ -1,6 +1,8 @@
 const {addHandler, handle} = require('skid/lib/event');
 const {playerHandle} = require('./player');
 
+const MOVE_INTERVAL = 3000;
+
 addHandler('load', (state) => {
     const width = 10;
     const height = 10;
@@ -13,6 +15,79 @@ addHandler('load', (state) => {
         }
     }
 });
+
+addHandler('load_done', (state) => {
+    state.overworld.updateInterval = setInterval(() => {
+        handle(state, 'overworld_move');
+    }, MOVE_INTERVAL);
+});
+
+addHandler('player_west', (state, {player, argument}) => {
+    if (!argument) return;
+    if (player.view === 'overworld') player.overworld.heading = 'west';
+});
+addHandler('player_east', (state, {player, argument}) => {
+    if (!argument) return;
+    if (player.view === 'overworld') player.overworld.heading = 'east';
+});
+addHandler('player_north', (state, {player, argument}) => {
+    if (!argument) return;
+    if (player.view === 'overworld') player.overworld.heading = 'north';
+});
+addHandler('player_south', (state, {player, argument}) => {
+    if (!argument) return;
+    if (player.view === 'overworld') player.overworld.heading = 'south';
+});
+
+addHandler('overworld_move', (state) => {
+    let changed = false;
+    for (const player of state.players.list) {
+        if (!player.overworld.position) {
+            const key = randomFriendlySquareKey(state, player.team);
+            const position = keyToXY(key);
+            player.overworld.position = position;
+            playerHandle(player, 'overworld_self', position);
+            changed = true;
+        } else if (player.overworld.heading) {
+            const heading = player.overworld.heading;
+            if (heading === 'east') {
+                move(state, player, {x: 1, y: 0});
+            } else if (heading === 'west') {
+                move(state, player, {x: -1, y: 0});
+            } else if (heading === 'north') {
+                move(state, player, {x: 0, y: -1});
+            } else if (heading === 'south') {
+                move(state, player, {x: 0, y: 1});
+            }
+            player.overworld.heading = undefined;
+            changed = true;
+        } else {
+            changed = changed || transmute(state, player);
+        }
+    }
+    if (changed) sendOverworldToAll(state);
+    sendTimerToAll(state);
+});
+
+function transmute(state, player) {
+    const key = xyToKey(player.overworld.position);
+    if (state.overworld.owners[key] === player.team.id) return false;
+    state.overworld.owners[key] = player.team.id;
+    return true;
+}
+
+function move(state, player, delta) {
+    if (!player.overworld.position) return;
+    let {x, y} = player.overworld.position;
+    x += delta.x;
+    y += delta.y;
+    if (x >= state.overworld.width) return;
+    if (x < 0) return;
+    if (y >= state.overworld.height) return;
+    if (y < 0) return;
+    player.overworld.position.x = x;
+    player.overworld.position.y = y;
+}
 
 function sendOverworld(state, player) {
     const teamA = [];
@@ -64,16 +139,21 @@ function sendOverworldToAll(state) {
     }
 }
 
+function sendTimerToAll(state) {
+    for (const player of state.players.list) {
+        if (player.view === 'overworld') {
+            playerHandle(player, 'overworld_timer', MOVE_INTERVAL);
+        }
+    }
+}
+
 addHandler('player_new', (state, player) => {
-    player.overworld = {};
+    player.overworld = {heading: undefined};
 });
 
 addHandler('player_onteam', (state, player) => {
     player.view = 'overworld';
-    const key = randomFriendlySquareKey(state, player.team);
-    const position = keyToXY(key);
-    player.overworld.position = position;
-    sendOverworldToAll(state);
+    sendOverworld(state, player);
 });
 
 addHandler('player_end', (state, player) => {
@@ -102,6 +182,10 @@ function keyToXY(key) {
     x = Number.parseInt(x);
     y = Number.parseInt(y);
     return {x, y};
+}
+
+function xyToKey({x, y}) {
+    return `${x},${y}`;
 }
 
 addHandler('player_reconnect', (state, player) => {

@@ -15,6 +15,7 @@ addHandler('load', (session) => {
     const hudCamera = new Camera(smoothing);
     hudCamera.w.setTo(1);
     hudCamera.h.setTo(.75);
+    hudCamera.layer = 2;
 
     session.scene = {hudCamera, smoothing};
 });

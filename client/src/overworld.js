@@ -8,10 +8,11 @@ const {loadIcon} = require('skid/lib/scene/icon');
 addHandler('load', (state) => {
     const tileA = loadIcon(state, './assets/tile_a.png', 50, 50, 100, 3567);
     const tileB = loadIcon(state, './assets/tile_b.png', 50, 50, 100, 5815);
-    const characterA = loadIcon(state, './assets/character_a.png', 50, 50, 100, 5815);
-    const characterB = loadIcon(state, './assets/character_b.png', 50, 50, 100, 5815);
+    const characterA = loadIcon(state, './assets/character_a.png', 50, 50, 100, 5515);
+    const characterB = loadIcon(state, './assets/character_b.png', 50, 50, 100, 4787);
 
     const camera = new Camera(state.scene.smoothing);
+    camera.layer = 1;
     const terrain = new Group(camera);
     const characters = new Group(camera);
     const width = 0;

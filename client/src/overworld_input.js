@@ -1,4 +1,4 @@
-const {addHandler} = require('skid/lib/event');
+const {addHandler, handle} = require('skid/lib/event');
 const {TextAvatar} = require('skid/lib/scene/text-avatar');
 const {Opacity} = require('skid/lib/scene/opacity');
 const {RectAvatar} = require('skid/lib/scene/rect-avatar');
@@ -15,7 +15,7 @@ addHandler('load', (state) => {
     text.strokeStyle = 'black';
     text.lineWidth = 4;
     text.font = '27px verdana';
-    text.x.setTo(10);
+    text.x.setTo(.01);
 
     state.overworld.hud = hud;
 });
@@ -26,6 +26,7 @@ addHandler('overworld', (state) => {
 
 addHandler('overworld_self', (state, {x, y}) => {
     state.overworld.worldHud.clear();
+    state.overworld.position = {x, y};
 
     const avatar = new RectAvatar(state.overworld.worldHud);
     avatar.x.setTo(x);
@@ -39,12 +40,42 @@ addHandler('overworld_self', (state, {x, y}) => {
     avatar.radius = .15;
 });
 
+addHandler('overworld_heading', (state, heading) => {
+    if (!state.overworld.position) return;
+
+    let message;
+    if (heading === 'east') message = '\u2192';
+    else if (heading === 'west') message = '\u2190';
+    else if (heading === 'north') message = '\u2191';
+    else if (heading === 'south') message = '\u2193';
+
+    const text = new TextAvatar(state.overworld.worldHud, state.overworld.camera);
+    text.text = message;
+    text.textAlign = 'center';
+    text.textBaseline = 'top';
+    text.fillStyle = '#ddf';
+    text.strokeStyle = 'black';
+    text.lineWidth = 3;
+    text.font = '30px verdana';
+    text.x.setTo(state.overworld.position.x);
+    text.y.setTo(state.overworld.position.y);
+});
+
 require('skid/lib/input'); // NOTE: makes 'key' events fire
 const {serverHandle} = require('./network');
 
 addHandler('key', (state, event) => {
-    if (event.code === 'ArrowUp') serverHandle('north', event.type === 'keydown');
-    else if (event.code === 'ArrowRight') serverHandle('east', event.type === 'keydown');
-    else if (event.code === 'ArrowDown') serverHandle('south', event.type === 'keydown');
-    else if (event.code === 'ArrowLeft') serverHandle('west', event.type === 'keydown');
+    let heading;
+    if (event.code === 'ArrowUp') heading = 'north';
+    else if (event.code === 'ArrowRight') heading = 'east';
+    else if (event.code === 'ArrowDown') heading = 'south';
+    else if (event.code === 'ArrowLeft') heading = 'west';
+    else return;
+
+    if (state.view === 'overworld') {
+        if (event.type === 'keydown') {
+            serverHandle(heading, true);
+            handle(state, 'overworld_heading', heading);
+        }
+    }
 });

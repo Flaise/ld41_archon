@@ -7,7 +7,7 @@ addHandler('load', (state) => {
     const root = new Translation(state.overworld.hud); // TODO: Shouldn't be overworld.hud
 
     const pieOffset = new Translation(root);
-    pieOffset.x.setTo(.08)
+    pieOffset.x.setTo(.05)
     pieOffset.y.setTo(.08);
 
     const pie = new PieAvatar(pieOffset);

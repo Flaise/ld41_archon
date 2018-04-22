@@ -4,6 +4,7 @@ const {Group} = require('skid/lib/scene/group');
 const {ComputedTileField} = require('skid/lib/scene/computed-tile-field');
 const {IconAvatar} = require('skid/lib/scene/icon-avatar');
 const {loadIcon} = require('skid/lib/scene/icon');
+const {Opacity} = require('skid/lib/scene/opacity');
 
 addHandler('load', (state) => {
     const tileA = loadIcon(state, './assets/tile_a.png', 64, 64, 128, 32452);
@@ -11,7 +12,8 @@ addHandler('load', (state) => {
     const characterA = loadIcon(state, './assets/character_a.png', 20, 29, 58, 664);
     const characterB = loadIcon(state, './assets/character_b.png', 32, 32, 64, 1035);
 
-    const camera = new Camera(state.scene.smoothing);
+    const opacity = new Opacity(state.scene.smoothing, 0);
+    const camera = new Camera(opacity);
     camera.layer = 1;
     const terrain = new Group(camera);
     const characters = new Group(camera);
@@ -20,7 +22,7 @@ addHandler('load', (state) => {
     const height = 0;
     const owners = {};
     const field = new ComputedTileField(terrain, 100);
-    state.overworld = {width, height, owners, camera, field, characters, worldHud,
+    state.overworld = {width, height, owners, camera, field, characters, worldHud, opacity,
                        tileA, tileB, characterA, characterB};
 });
 
@@ -31,6 +33,7 @@ addHandler('connect', (state) => {
 });
 
 addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
+    state.overworld.opacity.alpha.setTo(1);
     state.overworld.field.clear();
     state.overworld.characters.clear();
 
@@ -66,4 +69,8 @@ addHandler('overworld', (state, {width, height, owners, teamA, teamB}) => {
     for (const {x, y} of teamB) {
         const avatar = new IconAvatar(state.overworld.characters, state.overworld.characterB, x, y, 1, 1);
     }
+});
+
+addHandler('fight', (state) => {
+    state.overworld.opacity.alpha.setTo(0);
 });

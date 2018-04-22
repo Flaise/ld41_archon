@@ -13,7 +13,7 @@ function clientHandle(client, command, argument) {
 exports.clientHandle = clientHandle;
 
 addHandler('load', (state) => {
-    state.players = {list: []};
+    state.players = {list: [], next: 1};
 });
 
 function newPlayer(state, client) {
@@ -36,7 +36,9 @@ function attach(state, client, id) {
 }
 
 function attachNew(state, client, id) {
-    const player = {id, client};
+    const remoteCode = state.players.next;
+    state.players.next += 1;
+    const player = {id, client, remoteCode};
     state.players.list.push(player);
     clientHandle(client, 'attached', id);
     handle(state, 'player_new', player);

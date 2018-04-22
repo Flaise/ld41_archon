@@ -18,7 +18,7 @@ addHandler('load', (state) => {
 
 addHandler('load_done', (state) => {
     state.overworld.updateInterval = setInterval(() => {
-        handle(state, 'overworld_move');
+        handle(state, 'overworld_update');
     }, MOVE_INTERVAL);
 });
 
@@ -39,9 +39,10 @@ addHandler('player_south', (state, {player, argument}) => {
     if (player.view === 'overworld') player.overworld.heading = 'south';
 });
 
-addHandler('overworld_move', (state) => {
+addHandler('overworld_update', (state) => {
     let changed = false;
     for (const player of state.players.list) {
+        if (player.view !== 'overworld') continue;
         if (!player.overworld.position) {
             const key = randomFriendlySquareKey(state, player.team);
             const position = keyToXY(key);
@@ -62,10 +63,11 @@ addHandler('overworld_move', (state) => {
             player.overworld.heading = undefined;
             changed = true;
         } else {
-            changed = changed || transmute(state, player);
+            changed = transmute(state, player) || changed;
         }
     }
     if (changed) sendOverworldToAll(state);
+    handle(state, 'overworld_update_done');
     sendTimerToAll(state);
 });
 
@@ -149,7 +151,7 @@ function sendTimerToAll(state) {
 }
 
 addHandler('player_new', (state, player) => {
-    player.overworld = {heading: undefined};
+    player.overworld = {heading: undefined, position: undefined};
 });
 
 addHandler('player_onteam', (state, player) => {

@@ -24,6 +24,10 @@ addHandler('overworld', (state) => {
     state.overworld.hud.alpha.setTo(1);
 });
 
+addHandler('fight', (state) => {
+    state.overworld.hud.alpha.setTo(0);
+});
+
 addHandler('overworld_self', (state, {x, y}) => {
     state.overworld.worldHud.clear();
     state.overworld.position = {x, y};
@@ -56,7 +60,7 @@ addHandler('overworld_heading', (state, heading) => {
     text.fillStyle = '#ddf';
     text.strokeStyle = 'black';
     text.lineWidth = 3;
-    text.font = '30px verdana';
+    text.font = '40px verdana';
     text.x.setTo(state.overworld.position.x);
     text.y.setTo(state.overworld.position.y);
 });

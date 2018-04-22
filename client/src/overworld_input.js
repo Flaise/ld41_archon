@@ -66,10 +66,10 @@ const {serverHandle} = require('./network');
 
 addHandler('key', (state, event) => {
     let heading;
-    if (event.code === 'ArrowUp') heading = 'north';
-    else if (event.code === 'ArrowRight') heading = 'east';
-    else if (event.code === 'ArrowDown') heading = 'south';
-    else if (event.code === 'ArrowLeft') heading = 'west';
+    if (event.code === 'ArrowUp' || event.code === 'KeyW') heading = 'north';
+    else if (event.code === 'ArrowRight' || event.code === 'KeyD') heading = 'east';
+    else if (event.code === 'ArrowDown' || event.code === 'KeyS') heading = 'south';
+    else if (event.code === 'ArrowLeft' || event.code === 'KeyA') heading = 'west';
     else return;
 
     if (state.view === 'overworld') {

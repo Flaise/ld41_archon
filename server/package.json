@@ -1,9 +1,9 @@
 {
   "scripts": {
-    "start": "node main.js"
+    "start": "node ./src/main.js"
   },
   "dependencies": {
-    "skid": "0.0.16",
+    "skid": "0.0.17",
     "socket.io": "^2.1.0",
     "babel-runtime": "^6.26.0"
   },

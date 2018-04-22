@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "babel-runtime": "^6.26.0",
-    "skid": "0.0.16",
+    "skid": "0.0.17",
     "socket.io-client": "^2.1.0"
   },
   "devDependencies": {

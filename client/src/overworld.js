@@ -6,10 +6,10 @@ const {IconAvatar} = require('skid/lib/scene/icon-avatar');
 const {loadIcon} = require('skid/lib/scene/icon');
 
 addHandler('load', (state) => {
-    const tileA = loadIcon(state, './assets/tile_a.png', 50, 50, 100, 3567);
-    const tileB = loadIcon(state, './assets/tile_b.png', 50, 50, 100, 5815);
-    const characterA = loadIcon(state, './assets/character_a.png', 50, 50, 100, 5515);
-    const characterB = loadIcon(state, './assets/character_b.png', 50, 50, 100, 4787);
+    const tileA = loadIcon(state, './assets/tile_a.png', 64, 64, 128, 32452);
+    const tileB = loadIcon(state, './assets/tile_b.png', 64, 64, 128, 30468);
+    const characterA = loadIcon(state, './assets/character_a.png', 20, 29, 58, 664);
+    const characterB = loadIcon(state, './assets/character_b.png', 32, 32, 64, 1035);
 
     const camera = new Camera(state.scene.smoothing);
     camera.layer = 1;

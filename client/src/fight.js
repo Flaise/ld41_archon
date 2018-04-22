@@ -5,6 +5,7 @@ const {Translation} = require('skid/lib/scene/translation');
 const {ComputedTileField} = require('skid/lib/scene/computed-tile-field');
 const {IconAvatar} = require('skid/lib/scene/icon-avatar');
 const {loadIcon} = require('skid/lib/scene/icon');
+const {RectAvatar} = require('skid/lib/scene/rect-avatar');
 
 addHandler('load', (state) => {
     const tileB = loadIcon(state, './assets/tile_b.png', 64, 64, 128, 30468);
@@ -29,7 +30,20 @@ addHandler('load', (state) => {
 });
 
 addHandler('fight_character fight_self', (state, character) => {
-    addCharacter(character);
+    addCharacter(state, character);
+});
+
+addHandler('fight_self', (state, character) => {
+    const root = state.fight.entities[character.code].translation;
+
+    const avatar = new RectAvatar(root);
+    avatar.w.setTo(1);
+    avatar.h.setTo(1);
+    avatar.anchorX.setTo(.5);
+    avatar.anchorY.setTo(.5);
+    avatar.strokeStyle = 'yellow';
+    avatar.lineWidth = .05;
+    avatar.radius = .15;
 });
 
 addHandler('fight', (state, characters) => {
@@ -45,7 +59,7 @@ addHandler('fight', (state, characters) => {
     }
 
     for (const character of characters) {
-        addCharacter(character);
+        addCharacter(state, character);
     }
 });
 
@@ -68,3 +82,18 @@ function addCharacter(state, character) {
         translation,
     };
 }
+
+const {serverHandle} = require('./network');
+
+addHandler('key', (state, event) => {
+    let heading;
+    if (event.code === 'ArrowUp' || event.code === 'KeyW') heading = 'north';
+    else if (event.code === 'ArrowRight' || event.code === 'KeyD') heading = 'east';
+    else if (event.code === 'ArrowDown' || event.code === 'KeyS') heading = 'south';
+    else if (event.code === 'ArrowLeft' || event.code === 'KeyA') heading = 'west';
+    else return;
+
+    if (state.view === 'fight') {
+        serverHandle(heading, event.type === 'keydown');
+    }
+});

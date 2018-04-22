@@ -1,4 +1,5 @@
 const {addHandler, handle} = require('skid/lib/event');
+const {clamp} = require('skid/lib/scalars');
 const {playerHandle} = require('./player');
 
 addHandler('load', (state) => {
@@ -44,7 +45,8 @@ function arenaOfXY(state, x, y) {
 function serializePlayer(player) {
     if (!player.fight.position) return undefined;
     const {x, y} = player.fight.position;
-    return {x, y, code: player.remoteCode, team: player.team.id};
+    return {x, y, dx: player.fight.movement.x, dy: player.fight.movement.y,
+            code: player.remoteCode, team: player.team.id};
 }
 
 function enterFight(arena, player) {
@@ -54,6 +56,7 @@ function enterFight(arena, player) {
         const x = 0; // TODO
         const y = 0;
         player.fight.position = {x, y};
+        player.fight.movement = {x: 0, y: 0};
         sendFight(arena, player);
         const serialized = serializePlayer(player);
         for (const other of arena.players) {
@@ -67,8 +70,10 @@ function enterFight(arena, player) {
 function sendFight(arena, player) {
     const data = [];
     for (const other of arena.players) {
+        if (other === player) continue;
         data.push(serializePlayer(other));
     }
+    playerHandle(player, 'fight_self', serializePlayer(player));
     playerHandle(player, 'fight', data);
 }
 
@@ -76,4 +81,25 @@ addHandler('player_reconnect', (state, player) => {
     if (player.view === 'fight') {
         sendFight(player.fight.arena, player);
     }
+});
+
+addHandler('player_west', (state, {player, argument}) => {
+    if (player.view !== 'fight') return;
+    player.fight.movement.x += argument ? -1 : 1;
+    player.fight.movement.x = clamp(player.fight.movement.x, -1, 1);
+});
+addHandler('player_east', (state, {player, argument}) => {
+    if (player.view !== 'fight') return;
+    player.fight.movement.x += argument ? 1 : -1;
+    player.fight.movement.x = clamp(player.fight.movement.x, -1, 1);
+});
+addHandler('player_north', (state, {player, argument}) => {
+    if (player.view !== 'fight') return;
+    player.fight.movement.y += argument ? -1 : 1;
+    player.fight.movement.y = clamp(player.fight.movement.y, -1, 1);
+});
+addHandler('player_south', (state, {player, argument}) => {
+    if (player.view !== 'fight') return;
+    player.fight.movement.y += argument ? 1 : -1;
+    player.fight.movement.y = clamp(player.fight.movement.y, -1, 1);
 });

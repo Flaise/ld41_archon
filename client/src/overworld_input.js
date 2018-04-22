@@ -65,7 +65,6 @@ addHandler('overworld_heading', (state, heading) => {
     text.y.setTo(state.overworld.position.y);
 });
 
-require('skid/lib/input'); // NOTE: makes 'key' events fire
 const {serverHandle} = require('./network');
 
 addHandler('key', (state, event) => {

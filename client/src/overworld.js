@@ -13,8 +13,8 @@ addHandler('load', (state) => {
     const characterB = loadIcon(state, './assets/character_b.png', 32, 32, 64, 1035);
 
     const opacity = new Opacity(state.scene.smoothing, 0);
+    opacity.layer = 1;
     const camera = new Camera(opacity);
-    camera.layer = 1;
     const terrain = new Group(camera);
     const characters = new Group(camera);
     const worldHud = new Group(camera);

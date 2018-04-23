@@ -6,15 +6,17 @@ const {ComputedTileField} = require('skid/lib/scene/computed-tile-field');
 const {IconAvatar} = require('skid/lib/scene/icon-avatar');
 const {loadIcon} = require('skid/lib/scene/icon');
 const {RectAvatar} = require('skid/lib/scene/rect-avatar');
+const {Opacity} = require('skid/lib/scene/opacity');
 
 addHandler('load', (state) => {
     const tileB = loadIcon(state, './assets/tile_b.png', 64, 64, 128, 30468);
     const characterA = loadIcon(state, './assets/character_fight_a.png', 20, 29, 58, 664);
     const characterB = loadIcon(state, './assets/character_fight_b.png', 32, 32, 64, 1035);
 
-    const camera = new Camera(state.scene.smoothing);
-    camera.layer = 1;
+    const opacity = new Opacity(state.scene.smoothing);
+    opacity.layer = 1;
 
+    const camera = new Camera(opacity);
     camera.x.setTo(8 / 2 - .5);
     camera.y.setTo(8 / 2 - .5);
     camera.w.setTo(8 / .75);
@@ -26,7 +28,15 @@ addHandler('load', (state) => {
     const characters = new Group(camera);
     const field = new ComputedTileField(terrain, 100);
 
-    state.fight = {field, tileB, characterA, characterB, entities: {}, characters};
+    state.fight = {field, tileB, characterA, characterB, entities: {}, characters, opacity};
+});
+
+addHandler('load_done', (state) => {
+    for (let y = 0; y < 8; y += 1) {
+        for (let x = 0; x < 8; x += 1) {
+            state.fight.field.makeTile(state.fight.tileB, x, y, 0, 0);
+        }
+    }
 });
 
 addHandler('fight_character fight_self', (state, character) => {
@@ -46,17 +56,15 @@ addHandler('fight_self', (state, character) => {
     avatar.radius = .15;
 });
 
+addHandler('overworld', (state) => {
+    state.fight.opacity.alpha.setTo(0);
+});
+
 addHandler('fight', (state, characters) => {
-    state.fight.field.clear();
+    state.fight.opacity.alpha.setTo(1);
     state.fight.characters.clear();
     state.fight.entities = {};
     state.view = 'fight';
-
-    for (let y = 0; y < 8; y += 1) {
-        for (let x = 0; x < 8; x += 1) {
-            state.fight.field.makeTile(state.fight.tileB, x, y, 0, 0);
-        }
-    }
 
     for (const character of characters) {
         addCharacter(state, character);
@@ -65,22 +73,29 @@ addHandler('fight', (state, characters) => {
 
 function addCharacter(state, character) {
     if (!character) return;
-    let icon;
-    if (character.team === 'a') {
-        icon = state.fight.characterA;
-    } else if (character.team === 'b') {
-        icon = state.fight.characterB;
-    }
     const {x, y} = character;
-    const translation = new Translation(state.fight.characters);
+
+    let translation;
+    if (state.fight.entities[character.code]) {
+        translation = state.fight.entities[character.code].translation;
+    } else {
+        let icon;
+        if (character.team === 'a') {
+            icon = state.fight.characterA;
+        } else if (character.team === 'b') {
+            icon = state.fight.characterB;
+        }
+        translation = new Translation(state.fight.characters);
+        const avatar = new IconAvatar(translation, icon, 0, 0, 1, 1);
+        state.fight.entities[character.code] = {
+            ...character,
+            avatar,
+            translation,
+        };
+    }
+
     translation.x.setTo(x);
     translation.y.setTo(y);
-    const avatar = new IconAvatar(translation, icon, 0, 0, 1, 1);
-    state.fight.entities[character.code] = {
-        ...character,
-        avatar,
-        translation,
-    };
 }
 
 const {serverHandle} = require('./network');

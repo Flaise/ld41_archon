@@ -1,4 +1,5 @@
 const {addHandler, handle} = require('skid/lib/event');
+const {handleInterval} = require('skid/lib/timer');
 const {playerHandle} = require('./player');
 
 const MOVE_INTERVAL = 3000;
@@ -17,9 +18,7 @@ addHandler('load', (state) => {
 });
 
 addHandler('load_done', (state) => {
-    state.overworld.updateInterval = setInterval(() => {
-        handle(state, 'overworld_update');
-    }, MOVE_INTERVAL);
+    handleInterval(state, MOVE_INTERVAL, 'overworld_update');
 });
 
 addHandler('player_west', (state, {player, argument}) => {
@@ -196,4 +195,10 @@ addHandler('player_reconnect', (state, player) => {
         sendOverworld(state, player);
         playerHandle(player, 'overworld_self', player.overworld.position);
     }
+});
+
+addHandler('player_to_overworld', (state, player) => {
+    if (player.view === 'overworld') return;
+    player.view = 'overworld';
+    sendOverworld(state, player);
 });

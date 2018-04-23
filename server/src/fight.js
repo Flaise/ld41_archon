@@ -1,13 +1,44 @@
 const {addHandler, handle} = require('skid/lib/event');
+const {handleInterval} = require('skid/lib/timer');
 const {clamp} = require('skid/lib/scalars');
+const {remove} = require('skid/lib/array');
 const {playerHandle} = require('./player');
 
 addHandler('load', (state) => {
     state.fight = {arenas: []};
 });
 
+addHandler('load_done', (state) => {
+    handleInterval(state, 1000/60, 'fight_update');
+    handleInterval(state, 1000/30, 'fight_display');
+});
+
+addHandler('fight_update', (state) => {
+    for (const arena of state.fight.arenas) {
+        for (const player of arena.players) {
+            player.fight.position.x += player.fight.movement.x * .035;
+            player.fight.position.x = clamp(player.fight.position.x, 0, 7);
+            player.fight.position.y += player.fight.movement.y * .035;
+            player.fight.position.y = clamp(player.fight.position.y, 0, 7);
+        }
+    }
+});
+
+addHandler('fight_display', (state) => {
+    for (const arena of state.fight.arenas) {
+        sendFightToAll(arena);
+    }
+});
+
 addHandler('player_new', (state, player) => {
-    player.fight = {position: undefined, arena: undefined};
+    player.fight = {position: undefined, movement: undefined, arena: undefined};
+});
+
+addHandler('player_end', (state, player) => {
+    if (player.fight.arena) {
+        remove(player.fight.arena.players, player);
+        // TODO: Remove from other players' views
+    }
 });
 
 addHandler('overworld_update_done', (state) => {
@@ -31,7 +62,28 @@ addHandler('overworld_update_done', (state) => {
             enterFight(arena, player2);
         }
     }
+
+    for (const arena of state.fight.arenas) {
+        if (arenaTeamCount(arena) === 1) {
+            for (const player of arena.players) {
+                handle(state, 'player_to_overworld', player);
+            }
+            arena.players.splice(0);
+        }
+    }
 });
+
+function arenaTeamCount(arena) {
+    let a = false;
+    let b = false;
+    for (const player of arena.players) {
+        if (player.team.id === 'a') a = true;
+        else if (player.team.id === 'b') b = true;
+        if (a && b) return 2;
+    }
+    if (a || b) return 1;
+    return 0;
+}
 
 function arenaOfXY(state, x, y) {
     for (const arena of state.fight.arenas) {
@@ -53,9 +105,13 @@ function enterFight(arena, player) {
     if (player.view !== 'fight') {
         player.view = 'fight';
         player.fight.arena = arena;
-        const x = 0; // TODO
-        const y = 0;
-        player.fight.position = {x, y};
+        let position;
+        if (player.team.id === 'a') {
+            position = {x: 0.5, y: 1.5};
+        } else if (player.team.id === 'b') {
+            position = {x: 6.5, y: 5.5};
+        }
+        player.fight.position = position;
         player.fight.movement = {x: 0, y: 0};
         sendFight(arena, player);
         const serialized = serializePlayer(player);
@@ -64,6 +120,16 @@ function enterFight(arena, player) {
         }
         arena.players.push(player);
         playerHandle(player, 'fight_self', serialized);
+    }
+}
+
+function sendFightToAll(arena) {
+    const data = [];
+    for (const player of arena.players) {
+        data.push(serializePlayer(player));
+    }
+    for (const player of arena.players) {
+        playerHandle(player, 'fight', data);
     }
 }
 
